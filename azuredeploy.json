@@ -2,12 +2,6 @@
     "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "newDomainName": {
-            "type": "String"
-        },
-        "hostName": {
-            "type": "String"
-        },
         "userName": {
             "type": "String"
         },
@@ -16,24 +10,22 @@
         },
         "siteLocation": {
             "type": "String"
-        },
-        "hardwareSize": {
-            "type": "String"
         }
     },
     "variables": {
         "ServiceName": "[toLower(resourceGroup().name)]",
+        "newDomainName": "[toLower(resourceGroup().name)]",
         "newStorageAccountName": "[concat(variables('ServiceName'),'storage')]",
         "VNetName": "[concat(variables('ServiceName'),'VNet')]",
-
-
+        "hostName": "[concat(variables('ServiceName'),'VNet')]",
+        "hardwareSize": "Basic_A4"
 
 
     },
         "resources": [
             {
                 "type": "Microsoft.ClassicStorage/storageAccounts",
-                "name": "[parameters('newStorageAccountName')]",
+                "name": "[variables('newStorageAccountName')]",
                 "apiVersion": "2014-06-01",
                 "location": "[parameters('siteLocation')]",
                 "properties": {
@@ -42,7 +34,7 @@
             },
             {
                 "type": "Microsoft.ClassicCompute/domainNames",
-                "name": "[parameters('newDomainName')]",
+                "name": "[variables('newDomainName')]",
                 "apiVersion": "2014-06-01",
                 "location": "[parameters('siteLocation')]",
                 "properties": { }
@@ -74,16 +66,16 @@
             }
         },            {
                 "type": "Microsoft.ClassicCompute/virtualMachines",
-                "name": "[parameters('hostName')]",
+                "name": "[variables('hostName')]",
                 "apiVersion": "2014-06-01",
                 "location": "[parameters('siteLocation')]",
                 "properties": {
                     "domainName": {
-                        "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicCompute/domainNames/', parameters('newDomainName'))]"
+                        "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]"
                     },
                     "networkProfile": {
                         "virtualNetwork": {
-                            "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicNetwork/virtualNetworks/', parameters('VNetName'))]",
+                            "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]",
                             "subnetNames": [
                                 "Subnet-1"
                             ]
@@ -106,11 +98,11 @@
                         ]
                     },
                     "hardwareProfile": {
-                        "size": "[parameters('hardwareSize')]",
+                        "size": "[variables('hardwareSize')]",
                         "platformGuestAgent": "true"
                     },
                     "operatingSystemProfile": {
-                        "computerName": "[parameters('hostName')]",
+                        "computerName": "[variables('hostName')]",
                         "adminUserName": "[parameters('userName')]",
                         "adminPassword": "[parameters('password')]",
                         "windowsOperatingSystemProfile": {
@@ -123,16 +115,16 @@
                     },
                     "storageProfile": {
                         "operatingSystemDisk": {
-                            "diskName": "[concat(parameters('newDomainName'), '-', parameters('hostName'), '-osdisk')]",
-                            "vhdUri": "[concat(reference(concat('Microsoft.ClassicStorage/storageAccounts/', parameters('newStorageAccountName'))).endpoints[0], 'vhds/', parameters('newDomainName'), '-', parameters('hostName'), '-osdisk.vhd')]",
+                            "diskName": "[concat(variables('newDomainName'), '-', variables('hostName'), '-osdisk')]",
+                            "vhdUri": "[concat(reference(concat('Microsoft.ClassicStorage/storageAccounts/', variables('newStorageAccountName'))).endpoints[0], 'vhds/', variables('newDomainName'), '-', variables('hostName'), '-osdisk.vhd')]",
                             "caching": "ReadWrite",
                             "sourceImageName": "fb83b3509582419d99629ce476bcb5c8__SQL-Server-20140SP1-12.0.4100.1-Ent-ENU-Win2012R2-cy15su05"
                         }
                     }
                 },
                 "dependsOn": [
-                    "[concat('Microsoft.ClassicCompute/domainNames/', parameters('newDomainName'))]",
-                    "[concat('Microsoft.ClassicNetwork/virtualNetworks/', parameters('VNetName'))]"
+                    "[concat('Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]",
+                    "[concat('Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]"
                 ]
             }
         ]
