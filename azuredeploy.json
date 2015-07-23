@@ -17,28 +17,28 @@
         "newDomainName": "[toLower(resourceGroup().name)]",
         "newStorageAccountName": "[concat(variables('ServiceName'),'storage')]",
         "VNetName": "[concat(variables('ServiceName'),'VNet')]",
-        "hostName": "[concat(variables('ServiceName'),'VNet')]",
-        "hardwareSize": "Basic_A4"
-
+        "hostName": "[concat(variables('ServiceName'),'-SQL')]",
+        "hardwareSize": "Basic_A4",
+        "SQLPrepareMachineModules": "\"xSqlPs\""
 
     },
-        "resources": [
-            {
-                "type": "Microsoft.ClassicStorage/storageAccounts",
-                "name": "[variables('newStorageAccountName')]",
-                "apiVersion": "2014-06-01",
-                "location": "[parameters('siteLocation')]",
-                "properties": {
-                    "accountType": "Standard-GRS"
-                }
-            },
-            {
-                "type": "Microsoft.ClassicCompute/domainNames",
-                "name": "[variables('newDomainName')]",
-                "apiVersion": "2014-06-01",
-                "location": "[parameters('siteLocation')]",
-                "properties": { }
-            },
+    "resources": [
+        {
+            "type": "Microsoft.ClassicStorage/storageAccounts",
+            "name": "[variables('newStorageAccountName')]",
+            "apiVersion": "2014-06-01",
+            "location": "[parameters('siteLocation')]",
+            "properties": {
+                "accountType": "Standard-GRS"
+            }
+        },
+        {
+            "type": "Microsoft.ClassicCompute/domainNames",
+            "name": "[variables('newDomainName')]",
+            "apiVersion": "2014-06-01",
+            "location": "[parameters('siteLocation')]",
+            "properties": { }
+        },
         {
             "type": "Microsoft.ClassicNetwork/virtualNetworks",
             "name": "[variables('VNetName')]",
@@ -60,68 +60,97 @@
                     },
                 ]
             }
-        },            {
-                "type": "Microsoft.ClassicCompute/virtualMachines",
-                "name": "[variables('hostName')]",
-                "apiVersion": "2014-06-01",
-                "location": "[parameters('siteLocation')]",
-                "properties": {
-                    "domainName": {
-                        "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]"
-                    },
-                    "networkProfile": {
-                        "virtualNetwork": {
-                            "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]",
-                            "subnetNames": [
-                                "Subnet-SQL"
-                            ]
-                        },
-                        "inputEndpoints": [
-                            {
-                                "enableDirectServerReturn": "False",
-                                "endpointName": "Remote Desktop",
-                                "privatePort": 3389,
-                                "publicPort": null,
-                                "protocol": "tcp"
-                            },
-                            {
-                                "enableDirectServerReturn": "False",
-                                "endpointName": "Powershell",
-                                "privatePort": 5986,
-                                "publicPort": 5986,
-                                "protocol": "tcp"
-                            }
+        },
+        {
+            "type": "Microsoft.ClassicCompute/virtualMachines",
+            "name": "[variables('hostName')]",
+            "apiVersion": "2014-06-01",
+            "location": "[parameters('siteLocation')]",
+            "properties": {
+                "domainName": {
+                    "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]"
+                },
+                "networkProfile": {
+                    "virtualNetwork": {
+                        "id": "[concat(resourceGroup().id, '/providers/Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]",
+                        "subnetNames": [
+                            "Subnet-SQL"
                         ]
                     },
-                    "hardwareProfile": {
-                        "size": "[variables('hardwareSize')]",
-                        "platformGuestAgent": "true"
-                    },
-                    "operatingSystemProfile": {
-                        "computerName": "[variables('hostName')]",
-                        "adminUserName": "[parameters('userName')]",
-                        "adminPassword": "[parameters('password')]",
-                        "windowsOperatingSystemProfile": {
-                            "winRMListeners": [
-                                {
-                                    "protocol": "Https"
-                                }
-                            ]
+                    "inputEndpoints": [
+                        {
+                            "enableDirectServerReturn": "False",
+                            "endpointName": "Remote Desktop",
+                            "privatePort": 3389,
+                            "publicPort": null,
+                            "protocol": "tcp"
+                        },
+                        {
+                            "enableDirectServerReturn": "False",
+                            "endpointName": "Powershell",
+                            "privatePort": 5986,
+                            "publicPort": 5986,
+                            "protocol": "tcp"
                         }
-                    },
-                    "storageProfile": {
-                        "operatingSystemDisk": {
-                            "diskName": "[concat(variables('newDomainName'), '-', variables('hostName'), '-osdisk')]",
-                            "vhdUri": "[concat(reference(concat('Microsoft.ClassicStorage/storageAccounts/', variables('newStorageAccountName'))).endpoints[0], 'vhds/', variables('newDomainName'), '-', variables('hostName'), '-osdisk.vhd')]",
-                            "caching": "ReadWrite",
-                            "sourceImageName": "fb83b3509582419d99629ce476bcb5c8__SQL-Server-20140SP1-12.0.4100.1-Ent-ENU-Win2012R2-cy15su05"
-                        }
+                    ]
+                },
+                "hardwareProfile": {
+                    "size": "[variables('hardwareSize')]",
+                    "platformGuestAgent": "true"
+                },
+                "operatingSystemProfile": {
+                    "computerName": "[variables('hostName')]",
+                    "adminUserName": "[parameters('userName')]",
+                    "adminPassword": "[parameters('password')]",
+                    "windowsOperatingSystemProfile": {
+                        "winRMListeners": [
+                            {
+                                "protocol": "Https"
+                            }
+                        ]
                     }
                 },
-                "dependsOn": [
-                    "[concat('Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]",
-                    "[concat('Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]"
+                "storageProfile": {
+                    "operatingSystemDisk": {
+                        "diskName": "[concat(variables('newDomainName'), '-', variables('hostName'), '-osdisk')]",
+                        "vhdUri": "[concat(reference(concat('Microsoft.ClassicStorage/storageAccounts/', variables('newStorageAccountName'))).endpoints[0], 'vhds/', variables('newDomainName'), '-', variables('hostName'), '-osdisk.vhd')]",
+                        "caching": "ReadWrite",
+                        "sourceImageName": "fb83b3509582419d99629ce476bcb5c8__SQL-Server-20140SP1-12.0.4100.1-Ent-ENU-Win2012R2-cy15su05"
+                    }
+                }
+                "extensions": [
+                    {
+                        "extension": "BGInfo",
+                        "publisher": "Microsoft.Compute",
+                        "version": "1.*"
+                    }
                 ]
-            }
-        ]
+            },
+            "dependsOn": [
+                "[concat('Microsoft.ClassicCompute/domainNames/', variables('newDomainName'))]",
+                "[concat('Microsoft.ClassicNetwork/virtualNetworks/', variables('VNetName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ClassicCompute/virtualMachines/extensions",
+            "properties": {
+                "extension": "CustomScriptExtension",
+                "publisher": "Microsoft.Compute",
+                "version": "1.*",
+                "parameters": {
+                    "public": {
+                        "fileUris": [
+                            "https://inteportprovisioning.blob.core.windows.net/scripts/ConvertSsasToTabular.ps1"
+                        ],
+                        "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command .\\ConvertSsasToTabular.ps1"
+                    }
+                }
+            },
+            "apiVersion": "2014-06-01",
+            "name": "[concat(variables('hostName'),'/CreateSQLCommand')]",
+            "location": "[parameters('siteLocation')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ClassicCompute/virtualMachines', variables('hostName'))]"
+            ]
+        }    ]
     }
