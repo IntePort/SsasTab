@@ -123,6 +123,20 @@
                         "extension": "BGInfo",
                         "publisher": "Microsoft.Compute",
                         "version": "1.*"
+                    },
+                    {
+                        "extension": "CustomScriptExtension",
+                        "publisher": "Microsoft.Compute",
+                        "version": "1.*",
+                        "parameters": {
+                            "public": {
+                                "fileUris": [
+                                    "https://inteportprovisioning.blob.core.windows.net/scripts/PrepareMachine.ps1",
+                                    "https://inteportprovisioning.blob.core.windows.net/scripts/xSqlPs.zip"
+                                ],
+                                "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command .\\PrepareMachine.ps1 -Modules ', variables('SQLPrepareMachineModules'),' -Force')]"
+                            }
+                        }
                     }
                 ]
             },
