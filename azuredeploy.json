@@ -131,8 +131,8 @@
                         "parameters": {
                             "public": {
                                 "fileUris": [
-                                    "https://inteportprovisioning.blob.core.windows.net/scripts/PrepareMachine.ps1",
-                                    "https://inteportprovisioning.blob.core.windows.net/scripts/xSqlPs.zip"
+                                    "https://intprovisioning.blob.core.windows.net/scripts/PrepareMachine.ps1",
+                                    "https://intprovisioning.blob.core.windows.net/scripts/xSqlPs.zip"
                                 ],
                                 "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command .\\PrepareMachine.ps1 -Modules ', variables('SQLPrepareMachineModules'),' -Force')]"
                             }
@@ -154,7 +154,7 @@
                 "parameters": {
                     "public": {
                         "fileUris": [
-                            "https://inteportprovisioning.blob.core.windows.net/scripts/ConvertSsasToTabular.ps1"
+                            "https://intprovisioning.blob.core.windows.net/scripts/ConvertSsasToTabular.ps1"
                         ],
                         "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command .\\ConvertSsasToTabular.ps1"
                     }
